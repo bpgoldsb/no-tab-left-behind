@@ -1,0 +1,21 @@
+{
+
+    "manifest_version": 2,
+    "name": "Singleton",
+    "version": "1.0",
+  
+    "description": "Kill tabs dead",
+  
+    "icons": {
+      "48": "icons/tab.png"
+    },
+    "permissions": [ "tabs", "webNavigation" ],
+    "background": {
+        "scripts": [
+          "browser-pollyfill.js",
+          "lodash.js",
+          "background.js"
+        ]
+    }
+  
+  }
