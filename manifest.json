@@ -1,10 +1,10 @@
 {
 
     "manifest_version": 2,
-    "name": "Singleton",
-    "version": "1.0",
+    "name": "No Tab Left Behind",
+    "version": "0.0.1",
   
-    "description": "Kill tabs dead",
+    "description": "Prevent duplicate tabs from dominating your browser window",
   
     "icons": {
       "48": "icons/tab.png"
@@ -12,7 +12,7 @@
     "permissions": [ "tabs", "webNavigation" ],
     "background": {
         "scripts": [
-          "browser-pollyfill.js",
+          "browser-polyfill.js",
           "lodash.js",
           "background.js"
         ]

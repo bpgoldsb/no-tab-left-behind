@@ -1,4 +1,5 @@
-console.log("Singleton Activated")
+console.log("NTLB Activated")
+
 
 const docsDomain = "docs.google.com"
 const driveFileMatch =  new RegExp('/(document|presentation|spreadsheets)\/d\/([^\/]{16,}).*/')
@@ -39,7 +40,7 @@ function existingFileTab(fileId, currentTabId, tabs) {
     let openFileIds = openGDriveFileIds(tabs)
     let openTab = openFileIds[fileId]
     if (openTab.id) { 
-        console.log(`FileID ${fileId} open in tab ${openTab.id}`)
+        // console.log(`FileID ${fileId} already open in tab ${openTab.id}`)
         if (openTab.id == currentTabId) { 
             console.log(`FileID ${fileId} is being re-opened in same tab`)
         } else {
@@ -68,12 +69,20 @@ function navHandler(navEvent) {
         openTab = existingFileTab(newFileId, navEvent.tabId, tabs)
         if (openTab) {
             console.log(`Switching to tab ${openTab.id}`)
+            console.log('Open Tab: ', openTab)
             if (navEvent.windowId != openTab.windowId) {
                 console.log(`Switching focus from window ${openTab.windowId} to ${navEvent.windowId}`)
-                browser.windows.update(openTab.windowId, {focused: true})
+                let r = browser.windows.update(openTab.windowId, { focused: true })
+                console.log('Window switched, r: ', r)
             }
-            let removing = browser.tabs.remove([navEvent.tabId])
-            removing.then(() => { console.log(`Closed Tab ${navEvent.tabId}`)}, onError)
+            console.log(`Switching from tab ${navEvent.tabId} to ${openTab.id}`)
+            let tabUpdate = browser.tabs.update(openTab.tabId, { active: true, highlighted: true })
+            // let tabUpdate = browser.tabs.highlight(openTab.tabId)
+            tabUpdate.then((r) => {
+                console.log('Switch tab r: ', r)
+                let removing = browser.tabs.remove([navEvent.tabId])
+                removing.then(() => { console.log(`Closed Tab ${navEvent.tabId}`)}, onError)
+            }, onError)
             
         } else { 
             console.log("Existing or New tab")
