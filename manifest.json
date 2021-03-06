@@ -2,12 +2,14 @@
 
     "manifest_version": 2,
     "name": "No Tab Left Behind",
-    "version": "0.0.1",
+    "version": "0.0.2",
   
     "description": "Prevent duplicate tabs from dominating your browser window",
   
     "icons": {
-      "48": "icons/tab.png"
+      "24": "icons/tab24.png",
+      "36": "icons/tab36.png",
+      "48": "icons/tab48.png"
     },
     "permissions": [ "tabs", "webNavigation" ],
     "background": {
