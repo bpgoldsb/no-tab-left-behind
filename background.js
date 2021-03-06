@@ -5,6 +5,8 @@ const apps = {
     "slides": {domain: docsDomain, pathPrefix: '/presentation'},
     "sheets": {domain: docsDomain, pathPrefix: '/spreadsheets'},
 }
+let cleanupPort
+let installTabId
 
 function getGdriveFileId(url) {
     // Extract a Google Drive file ID from a url
@@ -47,7 +49,6 @@ function existingFileTab(fileId, currentTabId, tabs) {
     } else if (existingTabs.length > 1) {
         let existingTabIds = _.map(existingTabs, 'id')
         console.log(`File ${fileId} open in multiple ${existingTabs.length} tabs: ${existingTabIds}.  Will use tab with ID ${existingTabs[0].id}`)
-        // TODO should we kill multiple tabs too?  Maybe popup to user?
     }
 
     let existingTab = existingTabs[0]
@@ -115,7 +116,76 @@ function navHandler(navEvent) {
     handleDriveFileOpen(navEvent, newFileData)
 }
 
-let domains = _.map(_.values(apps), 'domain')
-let domainFilters = _.map(_.values(apps), (a) => { return {hostEquals: a.domain, pathPrefix: a.pathPrefix}})
+function cleanableFileTabs() {
+    // Find duplicate tabs and close the newest tabs
+    // Returns a promise which returns a map of fileId to an array of tabs.Tab objects, which exclude the oldest tab
+    let tabsQuery = browser.tabs.query({})
+    return tabsQuery.then((tabs) => {
+        let cleanableFiles = {}
+        let openFiles = openGDriveFileIds(tabs)
+        
+        _.map(openFiles, (tabs, fileId) => {
+            if (tabs.length <= 1) {
+                return
+            }
 
-browser.webNavigation.onBeforeNavigate.addListener(navHandler, {url: domainFilters})
+            let sortedTabs = _.sortBy(tabs, ['lastAccessed', 'id'])
+            cleanableFiles[fileId] = _.slice(sortedTabs, 1)
+        })
+        return cleanableFiles
+    }, onError)
+
+}
+
+function ntsbInstallHook(info) {
+    // On extension installation, determine if the user already has duplicate tabs open and ask them if they want to close them
+    cleanableFileTabs().then((fileTabs) => {
+        if (_.size(fileTabs) > 0) {
+            let cleanupCreate = browser.tabs.create({active: true, url: '/cleanup.html'})    
+            cleanupCreate.then((tab) => {
+                installTabId = tab.id
+            })
+        } else { 
+            console.debug("NTSB Installation Hook: No cleanable files/tabs")
+        }
+    }, onError)    
+}
+
+function cleanupConnected(p) {
+    // Handle extension messaging from install page
+    cleanupPort = p
+    cleanupPort.onMessage.addListener(cleanupMessage)
+    cleanableFileTabs().then((fileTabs) => {
+        cleanupPort.postMessage(fileTabs)    
+    })
+}
+
+function cleanupMessage(doCleanup) {
+    // Check the message from the install page and clean up duplicate tabs
+    if (doCleanup === true) {
+        cleanableFileTabs().then((fileTabs) => {
+            // Build a flat list of tabs to close
+            let targetTabs = []
+            _.each(fileTabs, (tabs) => {
+                let tabIds = _.map(tabs, 'id')
+                targetTabs = _.concat(targetTabs, tabIds)
+            })
+
+            // Close the tabs
+            let tabRemove = browser.tabs.remove(targetTabs)
+            tabRemove.then(undefined, onError)
+        }, onError)
+    }
+}
+
+function main() {
+    let domainFilters = _.map(_.values(apps), (a) => { return {hostEquals: a.domain, pathPrefix: a.pathPrefix}})
+
+    browser.runtime.onInstalled.addListener(ntsbInstallHook)
+    browser.runtime.onConnect.addListener(cleanupConnected)
+    browser.runtime.onMessage.addListener(cleanupMessage)
+    browser.webNavigation.onBeforeNavigate.addListener(navHandler, {url: domainFilters})
+
+}
+
+main()
