@@ -14,7 +14,7 @@ function onMessage(cleanupData) {
 function setupCloseButton(totalTabs) {
     // Setup handler and content for tab close button
     let closeTabsButton = document.getElementById("closeTabs")
-    closeTabsButton.innerHTML = `Close ${totalTabs} Duplicate Tabs`
+    closeTabsButton.textContent = `Close ${totalTabs} Duplicate Tabs`
     closeTabsButton.addEventListener('click', () => {
         port.postMessage(true)
     })
