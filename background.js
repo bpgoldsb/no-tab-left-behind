@@ -173,6 +173,7 @@ function cleanupMessage(doCleanup) {
 }
 
 function chromiumThemeHandler(message) {
+    // Handle messages from toggle-icon to see if we should use dark or light icons on Chromium browsers.
     if (message.scheme == "dark") {
         browser.browserAction.setIcon({
             "path": {
@@ -192,7 +193,6 @@ function chromiumThemeHandler(message) {
             }
         })
     }
-    console.log("Message!", message)
 }
 
 function main() {
