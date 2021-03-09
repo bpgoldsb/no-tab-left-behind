@@ -23,14 +23,31 @@ function setupCloseButton(totalTabs) {
 function createListItem(fileId, tabs, tabWindowCount) {
     // Add information about duplicate tabs/files
     let liNode = document.createElement("LI")
-    itemText = `Google Drive file ${fileId} is open in ${tabs.length + 1} tabs`
-    if (tabWindowCount > 1) {
-        itemText += ` (across ${tabWindowCount} browser windows)`
-    }
-    let textNode = document.createTextNode(itemText)
-    liNode.appendChild(textNode)
+    let docTitle = tabs[0].title
+    let item = createLineItemText(docTitle, tabs, tabWindowCount)
+    liNode.appendChild(item)
     document.getElementById(cleanupDataDOMId).appendChild(liNode)
-    
+}
+
+function createLineItemText(docTitle, tabs, tabWindowCount) {
+    // Create the text node that contains the information about 1 closeable group of tabs
+    let textParts = []
+    let listItem = document.createElement('p')
+    textParts.push(document.createTextNode("Google Drive file "))
+    let listItemPart2 = document.createElement("u")
+    let listItemPart2a = document.createElement("b")
+    let listItemPart2b = document.createTextNode(docTitle)
+    listItemPart2.appendChild(listItemPart2a)
+    listItemPart2a.appendChild(listItemPart2b)
+    textParts.push(listItemPart2)
+    textParts.push(document.createTextNode(` is open in ${tabs.length + 1} tabs`))
+
+    if (tabWindowCount > 1) {
+        textParts.push(document.createTextNode(` (across ${tabWindowCount} browser windows)`))
+    }
+    _.map(textParts, (p) => { listItem.appendChild(p) })
+
+    return listItem
 }
 
 let port = browser.runtime.connect({name: 'ntlb-cleanup'})

@@ -23,9 +23,8 @@ function openGDriveFileIds(tabs) {
     // Returns a map of Google Drive File ID to browser.tabs.Tab object
     let openFileIds = {}
     tabs.forEach(tab => {
-        var tabUrl
-        tabUrl = new URL(tab.url)
-        if (tabUrl.host == docsDomain) {
+        let tabUrl = new URL(tab.url)
+        if (tabUrl.host === docsDomain) {
             let fileData = getGdriveFileId(tabUrl)
             let fileId = fileData.id
             if (fileId in openFileIds) {
@@ -48,21 +47,15 @@ function existingFileTab(fileId, currentTabId, tabs) {
         return
     } else if (existingTabs.length > 1) {
         let existingTabIds = _.map(existingTabs, 'id')
-        console.log(`File ${fileId} open in multiple ${existingTabs.length} tabs: ${existingTabIds}.  Will use tab with ID ${existingTabs[0].id}`)
+        console.debug(`File ${fileId} open in multiple ${existingTabs.length} tabs: ${existingTabIds}.  Will use tab with ID ${existingTabs[0].id}`)
     }
 
-    let existingTab = existingTabs[0]
-    if (existingTab.id == currentTabId) { 
-        return
-    } else {
-        return existingTab
-    }
+    return existingTab[0].id === currentTabId ? null : existingTabs[0]
 }
 
 function onError(e) {
     console.error("e", e)
 }
-
 
 function switchWindow(navEvent, existingTab) {
     // Switch browser window
@@ -176,6 +169,7 @@ function cleanupMessage(doCleanup) {
             tabRemove.then(undefined, onError)
         }, onError)
     }
+
 }
 
 function main() {

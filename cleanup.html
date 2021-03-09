@@ -1,19 +1,21 @@
 <html>
     <head>
+        <title>No Tab Left Behind -- Cleanup!</title>
         <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
         <meta content="utf-8" http-equiv="encoding">
     </head>
     <body>
-        <script type="application/javascript" src="browser-polyfill.js"></script>
-        <script src="lodash.js"></script>
-        <script src="cleanup.js"></script>
+        <h3>No Tab Left Behind</h3>
+        <p>Thanks for using No Tab Left Behind.  Your browser is now safe from excessive duplicate tabs!</p>
+        <p>Going forward, No Tab Left Behind will prevent duplication when you open new tabs.  But it looks like you already have some duplicate tabs open!</p>
+        <ul id="cleanupData">
+        </ul>
+    
+        <p>You can close these duplicate tabs by clicking below.  This is the only time NTLB will bother you :)</p>
+        <button id="closeTabs">Close Tabs</button>
     </body>
-    <h3>SUP DAWG</h3>
-    <p>Thanks for using No Tab Left Behind.  Your browser is now safe from excessive duplicate tabs!</p>
-    <p>Going forward, No Tab Left Behind will prevent duplication when you open new tabs.  But it looks like you already have some duplicate tabs open!</p>
-    <ul id="cleanupData">
-    </ul>
 
-    <p>You can close these duplicate tabs by clicking below.  This is the only time NTLB will bother you :)</p>
-    <button id="closeTabs">Close Tabs</button>
+    <script type="application/javascript" src="browser-polyfill.js"></script>
+    <script src="lodash.js"></script>
+    <script src="cleanup.js"></script>
 </html>
