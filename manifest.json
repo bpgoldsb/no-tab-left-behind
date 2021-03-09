@@ -7,10 +7,11 @@
     "description": "Prevent duplicate tabs from dominating your browser window",
   
     "icons": {
-      "24": "icons/browser-logo.svg",
-      "36": "icons/browser-logo.svg",
-      "48": "icons/browser-logo.svg",
-      "96": "icons/browser-logo.svg"
+      "16": "icons/browser-logo-light.svg",
+      "32": "icons/browser-logo-light.svg",
+      "48": "icons/browser-logo-light.svg",
+      "96": "icons/browser-logo-light.svg",
+      "128": "icons/browser-logo-light.svg"
     },
     "permissions": [ "tabs", "webNavigation" ],
     "background": {
@@ -21,8 +22,19 @@
         ]
     },
     "browser_action": {
-      "default_icon": "icons/tab48.png",
-      "default_title": "No Tab Left Behind"
+      "browser_style": true,
+      "default_icon": "icons/browser-logo-light.svg",
+      "default_title": "No Tab Left Behind",
+      "theme_icons": [{
+        "light": "icons/browser-logo-light.svg",
+        "dark": "icons/browser-logo-dark.svg",
+        "size": 16
+      },
+      {
+        "light": "icons/browser-logo-light.svg",
+        "dark": "icons/browser-logo-dark.svg",
+        "size": 32
+      }]
     }
   
   }
