@@ -172,12 +172,36 @@ function cleanupMessage(doCleanup) {
 
 }
 
+function chromiumThemeHandler(message) {
+    if (message.scheme == "dark") {
+        browser.browserAction.setIcon({
+            "path": {
+                "16": "icons/browser-logo-light.svg",
+                "32": "icons/browser-logo-light.svg",
+                "64": "icons/browser-logo-light.svg",
+                "128": "icons/browser-logo-light.svg"
+            }
+        })
+    } else {
+        browser.browserAction.setIcon({
+            "path": {
+                "16": "icons/browser-logo-dark.svg",
+                "32": "icons/browser-logo-dark.svg",
+                "64": "icons/browser-logo-dark.svg",
+                "128": "icons/browser-logo-dark.svg"
+            }
+        })
+    }
+    console.log("Message!", message)
+}
+
 function main() {
     let domainFilters = _.map(_.values(apps), (a) => { return {hostEquals: a.domain, pathPrefix: a.pathPrefix}})
 
     browser.runtime.onInstalled.addListener(ntsbInstallHook)
     browser.runtime.onConnect.addListener(cleanupConnected)
     browser.runtime.onMessage.addListener(cleanupMessage)
+    browser.runtime.onMessage.addListener(chromiumThemeHandler)
     browser.webNavigation.onBeforeNavigate.addListener(navHandler, {url: domainFilters})
 
 }
