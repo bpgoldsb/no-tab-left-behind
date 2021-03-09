@@ -1,9 +1,9 @@
 const docsDomain = "docs.google.com"
 const driveFileMatch =  new RegExp('/(document|presentation|spreadsheets)\/d\/([^\/]{16,}).*/')
 const apps = {
-    "docs": {domain: docsDomain, pathPrefix: '/document'},
-    "slides": {domain: docsDomain, pathPrefix: '/presentation'},
-    "sheets": {domain: docsDomain, pathPrefix: '/spreadsheets'},
+    "docs": {domain: docsDomain, pathPrefix: '/document/d'},
+    "slides": {domain: docsDomain, pathPrefix: '/presentation/d'},
+    "sheets": {domain: docsDomain, pathPrefix: '/spreadsheets/d'},
 }
 let cleanupPort
 let installTabId
@@ -50,7 +50,7 @@ function existingFileTab(fileId, currentTabId, tabs) {
         console.debug(`File ${fileId} open in multiple ${existingTabs.length} tabs: ${existingTabIds}.  Will use tab with ID ${existingTabs[0].id}`)
     }
 
-    return existingTab[0].id === currentTabId ? null : existingTabs[0]
+    return existingTabs[0].id === currentTabId ? null : existingTabs[0]
 }
 
 function onError(e) {
