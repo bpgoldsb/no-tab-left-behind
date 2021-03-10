@@ -6,7 +6,7 @@ function onMessage(cleanupData) {
     _.each(cleanupData, (tabs, fileId) => {
         totalTabs = totalTabs + tabs.length
         let tabWindowCount = _.uniq(_.map(tabs, 'windowId')).length
-        createListItem(fileId, tabs, tabWindowCount)
+        createListItem(tabs, tabWindowCount)
     })
     setupCloseButton(totalTabs)
 }
@@ -20,13 +20,24 @@ function setupCloseButton(totalTabs) {
     })
 }
 
-function createListItem(fileId, tabs, tabWindowCount) {
+function createListItem(tabs, tabWindowCount) {
     // Add information about duplicate tabs/files
-    let liNode = document.createElement("LI")
+    // let liNode = document.createElement("LI")
     let docTitle = tabs[0].title
-    let item = createLineItemText(docTitle, tabs, tabWindowCount)
-    liNode.appendChild(item)
-    document.getElementById(cleanupDataDOMId).appendChild(liNode)
+    // let item = createLineItemText(docTitle, tabs, tabWindowCount)
+    // liNode.appendChild(item)
+
+
+    let newNode = document.querySelector('.list-template').cloneNode(true);
+
+    // Remove class reserved for template node
+    newNode.classList.remove('list-template')
+    // Set Title variable for .cleanUpDataTitle
+    newNode.children[0].textContent = docTitle
+
+    // Set count variable for .cleanUpDataCount
+    newNode.children[1].textContent = tabs.length + 1
+    document.getElementById(cleanupDataDOMId).appendChild(newNode)
 }
 
 function createLineItemText(docTitle, tabs, tabWindowCount) {

@@ -1,0 +1,78 @@
+:root {
+    --main-text-color: #f4f4f4;
+    --bg-color: #eaeaea;
+    --highlight-color: #38ace0;
+    --highlight-color-dark: #246887;
+}
+
+body {
+    font-family: 'Open Sans', 'Helvetica Neue', Arial, sans-serif;
+    background: url(media/ntlb-bg.jpg);
+    background-size: cover;
+    background-color: var(--bg-color);
+    display: flex;
+    justify-content: center;
+    color: var(--main-text-color);
+}
+
+p {
+    margin: 10px 0;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.title {
+    letter-spacing: 5px;
+    text-align: center;
+}
+
+.title:after {
+    content: "";
+    display: block;
+    margin: 0 auto;
+    margin-top: 25px;
+    width: 150px;
+    height: 2px;
+    background-color: #f4f4f4;
+}
+
+#cleanupData {
+    display:none;
+    line-height: 2rem
+}
+
+#cleanupData:not(:empty) {
+    display: block;
+}
+
+#cleanupData .cleanupDataTitle,
+#cleanupData .cleanupDataCount {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+#closeTabs {
+    background-color: var(--highlight-color);
+    border: none;
+    color: var(--main-text-color);
+    padding: 10px 20px;
+    font-size: 1.1rem;
+    letter-spacing: 2px;
+    cursor: pointer;
+    margin: 0 auto;
+    margin-top: 25px;
+    transition: background-color .3s;
+}
+
+#closeTabs:hover {
+    background-color: var(--highlight-color-dark);
+}
+
+/* Hide list template as it's only used for creating nodes to inject */
+.list-template {
+    display: none;
+}
