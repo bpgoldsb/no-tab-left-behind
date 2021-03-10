@@ -50,7 +50,8 @@ p {
 }
 
 #cleanupData .cleanupDataTitle,
-#cleanupData .cleanupDataCount {
+#cleanupData .cleanupDataCount,
+#cleanupData .cleanupWindowCount {
     font-weight: bold;
     text-decoration: underline;
 }
