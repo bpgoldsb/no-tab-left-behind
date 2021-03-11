@@ -6,7 +6,7 @@ function onMessage(cleanupData) {
     _.each(cleanupData, (tabs, fileId) => {
         totalTabs = totalTabs + tabs.length
         let tabWindowCount = _.uniq(_.map(tabs, 'windowId')).length
-        createListItem(fileId, tabs, tabWindowCount)
+        createListItem(tabs, tabWindowCount)
     })
     setupCloseButton(totalTabs)
 }
@@ -20,35 +20,29 @@ function setupCloseButton(totalTabs) {
     })
 }
 
-function createListItem(fileId, tabs, tabWindowCount) {
+function createListItem(tabs, tabWindowCount) {
     // Add information about duplicate tabs/files
-    let liNode = document.createElement("LI")
     let docTitle = tabs[0].title
-    let item = createLineItemText(docTitle, tabs, tabWindowCount)
-    liNode.appendChild(item)
-    document.getElementById(cleanupDataDOMId).appendChild(liNode)
-}
+    let newNode = document.querySelector('.list-template').cloneNode(true);
 
-function createLineItemText(docTitle, tabs, tabWindowCount) {
-    // Create the text node that contains the information about 1 closeable group of tabs
-    let textParts = []
-    let listItem = document.createElement('p')
-    textParts.push(document.createTextNode("Google Drive file "))
-    let listItemPart2 = document.createElement("u")
-    let listItemPart2a = document.createElement("b")
-    let listItemPart2b = document.createTextNode(docTitle)
-    listItemPart2.appendChild(listItemPart2a)
-    listItemPart2a.appendChild(listItemPart2b)
-    textParts.push(listItemPart2)
-    textParts.push(document.createTextNode(` is open in ${tabs.length + 1} tabs`))
+    // Remove class reserved for template node
+    newNode.classList.remove('list-template')
+    // Set Title variable for .cleanUpDataTitle
+    newNode.children[0].textContent = docTitle
 
+    // Set count variable for .cleanUpDataCount
+    newNode.children[1].textContent = tabs.length + 1
+
+    // Populate window count or remove text if only in a single window
     if (tabWindowCount > 1) {
-        textParts.push(document.createTextNode(` (across ${tabWindowCount} browser windows)`))
+        newNode.children[2].children[0].textContent = tabWindowCount
+    } else {
+        newNode.children[2].remove()
     }
-    _.map(textParts, (p) => { listItem.appendChild(p) })
-
-    return listItem
+    
+    document.getElementById(cleanupDataDOMId).appendChild(newNode)
 }
+
 
 let port = browser.runtime.connect({name: 'ntlb-cleanup'})
 port.onMessage.addListener(onMessage)
