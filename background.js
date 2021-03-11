@@ -130,7 +130,7 @@ function cleanableFileTabs() {
 
 }
 
-function ntsbInstallHook(info) {
+function ntsbInstallHook() {
     // On extension installation, determine if the user already has duplicate tabs open and ask them if they want to close them
     cleanableFileTabs().then((fileTabs) => {
         if (_.size(fileTabs) > 0) {
@@ -164,9 +164,18 @@ function cleanupMessage(doCleanup) {
                 targetTabs = _.concat(targetTabs, tabIds)
             })
 
-            // Close the tabs
-            let tabRemove = browser.tabs.remove(targetTabs)
-            tabRemove.then(undefined, onError)
+            // Close the cleanup page's tab as well
+            let ntsbUrl = browser.extension.getURL('/cleanup.html')
+            browser.tabs.query({url: ntsbUrl}).then((t) => {
+                if (t.length > 1) { 
+                    console.warn(`Expected 1 cleanup tab to close but got multiple.`)
+                    return
+                } else {
+                    targetTabs.push(t[0].id)
+                    let tabRemove = browser.tabs.remove(targetTabs)
+                    tabRemove.then(null, onError)
+                }
+            }, onError)
         }, onError)
     }
 
@@ -192,7 +201,7 @@ function setBrowserActionIcon(preference) {
     _.map(dimensions, (d) => {
         iconSettings.path[d] = iconPath
     })
-    let r = browser.browserAction.setIcon(iconSettings).then(null, onError)
+    browser.browserAction.setIcon(iconSettings).then(null, onError)
 }
 
 function main() {
