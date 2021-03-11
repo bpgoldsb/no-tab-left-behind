@@ -21,10 +21,6 @@
           "background.js"
         ]
     },
-    "content_scripts": [{
-      "matches": ["<all_urls>"],
-      "js": ["toggle-icon.js"]
-    }],
     "browser_action": {
       "browser_style": true,
       "default_icon": "icons/browser-logo-light.svg",

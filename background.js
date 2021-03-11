@@ -82,7 +82,7 @@ function handleDriveFileOpen(navEvent, newFileData) {
         existingTab = existingFileTab(newFileData.id, navEvent.tabId, tabs)
 
         // New file | Same tab
-        if (existingTab === undefined) {
+        if (existingTab === null) {
             console.debug(`Google ${newFileData.type} ${newFileData.id} not found in existing tab or being reloaded in same tab`)
             return
         }
@@ -172,38 +172,37 @@ function cleanupMessage(doCleanup) {
 
 }
 
-function chromiumThemeHandler(message) {
-    // Handle messages from toggle-icon to see if we should use dark or light icons on Chromium browsers.
-    if (message.scheme == "dark") {
-        browser.browserAction.setIcon({
-            "path": {
-                "16": "icons/browser-logo-light.svg",
-                "32": "icons/browser-logo-light.svg",
-                "64": "icons/browser-logo-light.svg",
-                "128": "icons/browser-logo-light.svg"
-            }
-        })
-    } else {
-        browser.browserAction.setIcon({
-            "path": {
-                "16": "icons/browser-logo-dark.svg",
-                "32": "icons/browser-logo-dark.svg",
-                "64": "icons/browser-logo-dark.svg",
-                "128": "icons/browser-logo-dark.svg"
-            }
-        })
+function chromiumSetupExtensionIcon() {
+    // Browser doesn't support media matching
+    if (!window.matchMedia) {
+        return
     }
+    window.matchMedia('(prefers-color-scheme: dark)').matches ? setBrowserActionIcon('light') : setBrowserActionIcon('dark')
+}
+
+
+function setBrowserActionIcon(preference) {
+    // Handle messages from toggle-icon to see if we should use dark or light icons on Chromium browsers.
+    // NOTE: preference is the color of the icon, NOT the system theme.  i.e. a "Dark Mode" browser would want a "light" icon.
+    const dimensions = [16, 32, 64, 128]
+    const iconPath = `icons/browser-logo-${preference}.svg`
+    const iconSettings = {path: {}}
+
+    // Build array of icon preferences
+    _.map(dimensions, (d) => {
+        iconSettings.path[d] = iconPath
+    })
+    let r = browser.browserAction.setIcon(iconSettings).then(null, onError)
 }
 
 function main() {
     let domainFilters = _.map(_.values(apps), (a) => { return {hostEquals: a.domain, pathPrefix: a.pathPrefix}})
+    chromiumSetupExtensionIcon()
 
     browser.runtime.onInstalled.addListener(ntsbInstallHook)
     browser.runtime.onConnect.addListener(cleanupConnected)
     browser.runtime.onMessage.addListener(cleanupMessage)
-    browser.runtime.onMessage.addListener(chromiumThemeHandler)
     browser.webNavigation.onBeforeNavigate.addListener(navHandler, {url: domainFilters})
-
 }
 
 main()
