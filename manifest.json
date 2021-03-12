@@ -7,11 +7,12 @@
     "description": "Prevent duplicate tabs from dominating your browser window",
   
     "icons": {
-      "16": "icons/browser-logo-light.svg",
-      "32": "icons/browser-logo-light.svg",
-      "48": "icons/browser-logo-light.svg",
-      "96": "icons/browser-logo-light.svg",
-      "128": "icons/browser-logo-light.svg"
+      "16": "icons/store-logo-16.png",
+      "32": "icons/store-logo-32.png",
+      "48": "icons/store-logo-48.png",
+      "64": "icons/store-logo-64.png",
+      "96": "icons/store-logo-96.png",
+      "128": "icons/store-logo-128.png"
     },
     "permissions": [ "tabs", "webNavigation" ],
     "background": {
