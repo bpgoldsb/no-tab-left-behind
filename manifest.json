@@ -2,7 +2,7 @@
 
     "manifest_version": 2,
     "name": "No Tab Left Behind",
-    "version": "0.0.7",
+    "version": "0.0.8",
   
     "description": "Prevent duplicate tabs from dominating your browser window",
   
@@ -24,16 +24,16 @@
     },
     "browser_action": {
       "browser_style": true,
-      "default_icon": "icons/browser-logo-light.svg",
+      "default_icon": "icons/browser-action-light-32.png",
       "default_title": "No Tab Left Behind",
       "theme_icons": [{
-        "light": "icons/browser-logo-light.svg",
-        "dark": "icons/browser-logo-dark.svg",
+        "light": "icons/browser-action-light-16.png",
+        "dark": "icons/browser-action-dark-16.png",
         "size": 16
       },
       {
-        "light": "icons/browser-logo-light.svg",
-        "dark": "icons/browser-logo-dark.svg",
+        "light": "icons/browser-action-light-32.png",
+        "dark": "icons/browser-action-dark-32.png",
         "size": 32
       }]
     }

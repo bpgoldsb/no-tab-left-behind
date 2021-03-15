@@ -194,12 +194,11 @@ function setBrowserActionIcon(preference) {
     // Handle messages from toggle-icon to see if we should use dark or light icons on Chromium browsers.
     // NOTE: preference is the color of the icon, NOT the system theme.  i.e. a "Dark Mode" browser would want a "light" icon.
     const dimensions = [16, 32, 64, 128]
-    const iconPath = `icons/browser-logo-${preference}.svg`
-    const iconSettings = {path: {}}
+    const iconSettings = { path: {} }
 
     // Build array of icon preferences
-    _.map(dimensions, (d) => {
-        iconSettings.path[d] = iconPath
+    _.map(dimensions, (dimension) => {
+        iconSettings.path[dimension] = `icons/browser-action-${preference}-${dimension}.png`
     })
     browser.browserAction.setIcon(iconSettings).then(null, onError)
 }
