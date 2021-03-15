@@ -5,6 +5,12 @@ Do your browser tabs look like this?
 
 **No Tab Left Behind can save you!**
 
+# Get it from Extension stores
+
+* [Firefox](https://addons.mozilla.org/en-US/firefox/addon/no-tab-left-behind/)
+* [Chrome](https://chrome.google.com/webstore/detail/no-tab-left-behind/nohaefmmbjjgbjklonigabcnpooifgdn)
+* [Edge](https://microsoftedge.microsoft.com/addons/detail/no-tab-left-behind/adjglholkoebndnfihlofjlileneilen)
+
 # The Problem
 
 Have your browser tabs gotten so small that you can't even fit an icon? Fear no more, No Tab Left Behind is here to solve your problems!
