@@ -23,6 +23,7 @@ function openGDriveFileIds(tabs) {
     // Returns a map of Google Drive File ID to browser.tabs.Tab object
     let openFileIds = {}
     tabs.forEach(tab => {
+        console.log("wtf tab", tab)
         let tabUrl = new URL(tab.url)
         if (tabUrl.host === docsDomain) {
             let fileData = getGdriveFileId(tabUrl)
@@ -59,6 +60,9 @@ function onError(e) {
 
 function switchWindow(navEvent, existingTab) {
     // Switch browser window
+    if (existingTab === undefined) {
+        return
+    }
     if (navEvent.windowId != existingTab.windowId) {
         console.debug(`Existing tab's window not in focus. Switching focus from window ${existingTab.windowId} to ${navEvent.windowId}`)
         let windowUpdate = browser.windows.update(existingTab.windowId, { focused: true })
