@@ -210,7 +210,7 @@ function main() {
     browser.runtime.onInstalled.addListener(ntsbInstallHook)
     browser.runtime.onConnect.addListener(cleanupConnected)
     browser.runtime.onMessage.addListener(cleanupMessage)
-    browser.webNavigation.onBeforeNavigate.addListener(navHandler, {url: domainFilters})
+    browser.webNavigation.onCommitted.addListener(navHandler, {url: domainFilters})
 }
 
 main()
