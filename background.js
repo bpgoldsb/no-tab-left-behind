@@ -23,7 +23,6 @@ function openGDriveFileIds(tabs) {
     // Returns a map of Google Drive File ID to browser.tabs.Tab object
     let openFileIds = {}
     tabs.forEach(tab => {
-        console.log("wtf tab", tab)
         let tabUrl = new URL(tab.url)
         if (tabUrl.host === docsDomain) {
             let fileData = getGdriveFileId(tabUrl)
@@ -40,34 +39,52 @@ function openGDriveFileIds(tabs) {
 
 function existingFileTab(fileId, currentTabId, tabs) {
     // Find the existing browser tab a file is open in, if it is open.
-    // Return undefined if not open, othwewise return an integer of the tabId the file is open in.
+    // Return null if not open, othwewise return a browser.Tab the file is open in.
     // If file is open in multiple tabs, pick first tab
     let openFileIds = openGDriveFileIds(tabs)
     let existingTabs = openFileIds[fileId]
+    
     if (existingTabs === undefined) { 
-        return
-    } else if (existingTabs.length > 1) {
-        let existingTabIds = _.map(existingTabs, 'id')
-        console.debug(`File ${fileId} open in multiple ${existingTabs.length} tabs: ${existingTabIds}.  Will use tab with ID ${existingTabs[0].id}`)
+        return null
+    }
+    
+    let otherExistingTabs = _.filter(existingTabs, (t) => { return t.id !== currentTabId })
+    if (otherExistingTabs.length > 0) {
+        let chosenTab = otherExistingTabs[0]
+        let otherTabIds = _.map(otherExistingTabs, 'id')
+        console.debug(`File ${fileId} open in ${otherExistingTabs.length} tab(s): ${otherTabIds}.  Will use tab with ID ${chosenTab.id}`)
+        return chosenTab
     }
 
-    return existingTabs[0].id === currentTabId ? null : existingTabs[0]
+    return null
 }
 
 function onError(e) {
     console.error("e", e)
 }
 
-function switchWindow(navEvent, existingTab) {
+function switchWindow(browserTabs, existingTab) {
     // Switch browser window
-    if (existingTab === undefined) {
-        return
-    }
-    if (navEvent.windowId != existingTab.windowId) {
-        console.debug(`Existing tab's window not in focus. Switching focus from window ${existingTab.windowId} to ${navEvent.windowId}`)
-        let windowUpdate = browser.windows.update(existingTab.windowId, { focused: true })
-        windowUpdate.then(undefined, onError)
-    }
+    browser.windows.getCurrent().then((currentWindow) => {
+        let currentWindowId = _.get(currentWindow, 'id', null)
+        let existingWindowId = _.get(existingTab, 'windowId', null)
+
+        if (currentWindowId === null) {
+            console.warn("Could not get current window ID; Can't switch windows.")
+            return
+        }
+
+        if (existingWindowId === null) {
+            console.debug(`No existing window supplied`)
+            return
+        } 
+
+        if (currentWindowId != existingWindowId) {
+            console.debug(`Existing tab's window not in focus. Switching focus from window ${existingWindowId} to ${currentWindowId}`)
+            let windowUpdate = browser.windows.update(existingWindowId, { focused: true })
+            windowUpdate.then(undefined, onError)
+        }
+    }, onError)
 }
 
 function switchTab(navEvent, existingTab) {
@@ -83,7 +100,7 @@ function handleDriveFileOpen(navEvent, newFileData) {
     // Determine which action to take when a new Google Drive file is opened and take that action.
     querying = browser.tabs.query({})
     querying.then((tabs) => {
-        existingTab = existingFileTab(newFileData.id, navEvent.tabId, tabs)
+        let existingTab = existingFileTab(newFileData.id, navEvent.tabId, tabs)
 
         // New file | Same tab
         if (existingTab === null) {
@@ -93,7 +110,7 @@ function handleDriveFileOpen(navEvent, newFileData) {
 
         // File already open
         console.info(`Google ${newFileData.type} ${newFileData.id} already open in existing tab.  Will suppress new tab creation.`)
-        switchWindow(navEvent, existingTab)
+        switchWindow(tabs, existingTab)
         switchTab(navEvent, existingTab)
     }, reason => {
         onError(reason)
