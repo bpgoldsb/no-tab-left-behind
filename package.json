@@ -1,0 +1,23 @@
+{
+    "type": "module",
+    "scripts": {
+        "test": "jest"
+    },
+    "jest": {
+        "verbose": true,
+        "setupFiles": [
+            "jest-webextension-mock"
+        ],
+        "moduleFileExtensions": [
+            "js",
+            "json"
+        ],
+        "transform": {
+            "^.+\\.js$": "babel-jest"
+        }
+    },
+    "devDependencies": {
+        "jest": "^26.6.3",
+        "jest-webextension-mock": "^3.7.8"
+    }
+}

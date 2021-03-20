@@ -1,3 +1,6 @@
+const _ = require('./lodash')
+const browser = require('./browser-polyfill')
+
 const docsDomain = "docs.google.com"
 const driveFileMatch =  new RegExp('/(document|presentation|spreadsheets)\/d\/([^\/]{16,}).*/')
 const apps = {
@@ -10,22 +13,31 @@ let installTabId
 
 function getGdriveFileId(url) {
     // Extract a Google Drive file ID from a url
-    // returns an object containing the type of file and the file id
+    // Returns an object containing the type of file and the file id, or null if the url is not a drive file
     // Example: {type: 'docs', id: 'f9auc90jqwr21323jih89' }
     let match = url.pathname.match(driveFileMatch)
     if (match) {
         return {type: match[1], id: match[2]}
     }
+    return null
 }
 
 function openGDriveFileIds(tabs) {
     // Find all Google Drive files currently open in the browser
     // Returns a map of Google Drive File ID to browser.tabs.Tab object
     let openFileIds = {}
-    tabs.forEach(tab => {
-        let tabUrl = new URL(tab.url)
+    _.each(tabs, (tab) => {
+        let tabUrl
+        try {
+            tabUrl = new URL(tab.url)
+        } catch(err) {
+            return
+        }
         if (tabUrl.host === docsDomain) {
             let fileData = getGdriveFileId(tabUrl)
+            if (fileData === null) {
+                return
+            }
             let fileId = fileData.id
             if (fileId in openFileIds) {
                 openFileIds[fileId].push(tab)
@@ -39,18 +51,24 @@ function openGDriveFileIds(tabs) {
 
 function existingFileTab(fileId, currentTabId, tabs) {
     // Find the existing browser tab a file is open in, if it is open.
-    // Return undefined if not open, othwewise return an integer of the tabId the file is open in.
+    // Return null if not open, othwewise return a browser.Tab the file is open in.
     // If file is open in multiple tabs, pick first tab
     let openFileIds = openGDriveFileIds(tabs)
     let existingTabs = openFileIds[fileId]
+    
     if (existingTabs === undefined) { 
-        return
-    } else if (existingTabs.length > 1) {
-        let existingTabIds = _.map(existingTabs, 'id')
-        console.debug(`File ${fileId} open in multiple ${existingTabs.length} tabs: ${existingTabIds}.  Will use tab with ID ${existingTabs[0].id}`)
+        return null
+    }
+    
+    let otherExistingTabs = _.filter(existingTabs, (t) => { return t.id !== currentTabId })
+    if (otherExistingTabs.length > 0) {
+        let chosenTab = otherExistingTabs[0]
+        let otherTabIds = _.map(otherExistingTabs, 'id')
+        console.debug(`File ${fileId} open in ${otherExistingTabs.length} tab(s): ${otherTabIds}.  Will use tab with ID ${chosenTab.id}`)
+        return chosenTab
     }
 
-    return existingTabs[0].id === currentTabId ? null : existingTabs[0]
+    return null
 }
 
 function onError(e) {
@@ -213,4 +231,8 @@ function main() {
     browser.webNavigation.onCommitted.addListener(navHandler, {url: domainFilters})
 }
 
-main()
+if (require.main === module) {
+    main()
+}
+
+module.exports = { openGDriveFileIds, existingFileTab }
