@@ -1,5 +1,4 @@
 const _ = require('./lodash')
-const browser = require('./browser-polyfill')
 
 const docsDomain = "docs.google.com"
 const driveFileMatch =  new RegExp('/(document|presentation|spreadsheets)\/d\/([^\/]{16,}).*/')
@@ -80,14 +79,16 @@ function switchWindow(navEvent, existingTab) {
     if (navEvent.windowId != existingTab.windowId) {
         console.debug(`Existing tab's window not in focus. Switching focus from window ${existingTab.windowId} to ${navEvent.windowId}`)
         let windowUpdate = browser.windows.update(existingTab.windowId, { focused: true })
-        windowUpdate.then(undefined, onError)
+        return windowUpdate.then(undefined, onError)
+    } else {
+        return new Promise((resolve, reject) => resolve("No window switch needed"))
     }
 }
 
 function switchTab(navEvent, existingTab) {
     // Switch to a tab and close the previous
     let tabUpdate = browser.tabs.update(existingTab.id, { active: true, highlighted: true })
-    tabUpdate.then(() => {
+    return tabUpdate.then(() => {
         let removing = browser.tabs.remove([navEvent.tabId])
         removing.then(undefined, onError)
     }, onError)
@@ -96,19 +97,18 @@ function switchTab(navEvent, existingTab) {
 function handleDriveFileOpen(navEvent, newFileData) {
     // Determine which action to take when a new Google Drive file is opened and take that action.
     querying = browser.tabs.query({})
-    querying.then((tabs) => {
+    return querying.then((tabs) => {
         existingTab = existingFileTab(newFileData.id, navEvent.tabId, tabs)
 
         // New file | Same tab
         if (existingTab === null) {
             console.debug(`Google ${newFileData.type} ${newFileData.id} not found in existing tab or being reloaded in same tab`)
-            return
+        } else {
+            // File already open
+            console.info(`Google ${newFileData.type} ${newFileData.id} already open in existing tab.  Will suppress new tab creation.`)
+            switchWindow(navEvent, existingTab).then(undefined, onError)
+            switchTab(navEvent, existingTab).then(undefined, onError)
         }
-
-        // File already open
-        console.info(`Google ${newFileData.type} ${newFileData.id} already open in existing tab.  Will suppress new tab creation.`)
-        switchWindow(navEvent, existingTab)
-        switchTab(navEvent, existingTab)
     }, reason => {
         onError(reason)
     })
@@ -207,7 +207,6 @@ function chromiumSetupExtensionIcon() {
     window.matchMedia('(prefers-color-scheme: dark)').matches ? setBrowserActionIcon('light') : setBrowserActionIcon('dark')
 }
 
-
 function setBrowserActionIcon(preference) {
     // Handle messages from toggle-icon to see if we should use dark or light icons on Chromium browsers.
     // NOTE: preference is the color of the icon, NOT the system theme.  i.e. a "Dark Mode" browser would want a "light" icon.
@@ -235,4 +234,4 @@ if (require.main === module) {
     main()
 }
 
-module.exports = { openGDriveFileIds, existingFileTab }
+module.exports = { openGDriveFileIds, existingFileTab, getGdriveFileId, handleDriveFileOpen}
