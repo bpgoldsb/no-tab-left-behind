@@ -10,19 +10,26 @@ const unopenedFileUrls = [
 
 ]
 const testTabs = [
-    {id: 1, url: 'thisisnotaurl'},
-    {id: 2, url: 'https://www.google.com'},  // Not docs domain
-    {id: 3, url: 'https://docs.google.com/assets/foo'},  // Docs domain, invalid URL
-    {id: 4, url: 'https://docs.google.com/spreadsheets/d/12wBm8wsMTNdQeBafDSwZ8DPG0rs7IeCIwAxb2zaGpcM/edit'},  // Valid
-    {id: 5, url: 'https://docs.google.com/presentation/d/1xGVPxSqksByjHcdN9O1t3PvXUKCl39ruWJHABA01gt4/edit'},  // Valid
-    {id: 6, url: 'https://docs.google.com/document/d/1F2sgaYULlQKlMGNH0EnjM1ibdRnTeuYUrTatLqCgyz4/edit'}, // Valid
-    {id: 7, url: 'https://docs.google.com/document/d/1F2sgaYULlQKlMGNH0EnjM1ibdRnTeuYUrTatLqCgyz4/edit'}, // Valid but duplicate
-    {id: 8, url: 'https://docs.google.com/document/d/1i4VEAAZVgNHF7yQuivN5IXqb9eGtY_SutD4yHWeCSN4/edit'}, // Valid
-    {id: 9, url: 'https://docs.google.com/document/d/1i4VEAAZVgNHF7yQuivN5IXqb9eGtY_SutD4yHWeCSN4/edit'},  // Valid but duplicate
-    {id: 10, url: 'https://docs.google.com/document/d/1i4VEAAZVgNHF7yQuivN5IXqb9eGtY_SutD4yHWeCSN4/edit'}  // Valid but duplicate 2
+    {id: 1, windowId: 1, url: 'thisisnotaurl'},
+    {id: 2, windowId: 1,  url: 'https://www.google.com'},  // Not docs domain
+    {id: 3, windowId: 1,  url: 'https://docs.google.com/assets/foo'},  // Docs domain, invalid URL
+    {id: 4, windowId: 1,  url: 'https://docs.google.com/spreadsheets/d/12wBm8wsMTNdQeBafDSwZ8DPG0rs7IeCIwAxb2zaGpcM/edit'},  // Valid
+    {id: 5, windowId: 1,  url: 'https://docs.google.com/presentation/d/1xGVPxSqksByjHcdN9O1t3PvXUKCl39ruWJHABA01gt4/edit'},  // Valid
+    {id: 6, windowId: 1,  url: 'https://docs.google.com/document/d/1F2sgaYULlQKlMGNH0EnjM1ibdRnTeuYUrTatLqCgyz4/edit'}, // Valid
+    {id: 7, windowId: 1,  url: 'https://docs.google.com/document/d/1F2sgaYULlQKlMGNH0EnjM1ibdRnTeuYUrTatLqCgyz4/edit'}, // Valid but duplicate
+    {id: 8, windowId: 1,  url: 'https://docs.google.com/document/d/1i4VEAAZVgNHF7yQuivN5IXqb9eGtY_SutD4yHWeCSN4/edit'}, // Valid
+    {id: 9, windowId: 1,  url: 'https://docs.google.com/document/d/1i4VEAAZVgNHF7yQuivN5IXqb9eGtY_SutD4yHWeCSN4/edit'},  // Valid but duplicate
+    {id: 10, windowId: 1,  url: 'https://docs.google.com/document/d/1i4VEAAZVgNHF7yQuivN5IXqb9eGtY_SutD4yHWeCSN4/edit'}  // Valid but duplicate 2
 ]
 
 beforeEach(() => {
+    // Suppress console log/debug.  Re-enable if needed during debugging
+    console.info = jest.fn()
+    console.debug = jest.fn()
+    browser.windows = jest.fn()
+    browser.windows.update = jest.fn()
+    browser.windows.update.mockResolvedValueOnce({})
+
     browser.tabs.query.mockResolvedValueOnce(testTabs)
     browser.tabs.update.mockResolvedValueOnce({})
 })
@@ -69,22 +76,24 @@ describe('existingFileTab', () => {
 
 describe('handleDriveFileOpen', () => {
     test('closes a new tab when an existing tab is open', () => {
-        let x = testTabs[9]
-        let navEvent = {tabId: 999}
-        let newFileUrl = new URL(x.url)
+        let lastTab = _.last(testTabs)
+        let navEvent = {tabId: lastTab.id + 10000, windowId: lastTab.windowId}
+        let newFileUrl = new URL(lastTab.url)
         let newFileData = background.getGdriveFileId(newFileUrl)
     
-        expect.assertions(3)
+        expect.assertions(4)
         return background.handleDriveFileOpen(navEvent, newFileData).then(data => {
             expect(browser.tabs.query).toHaveBeenCalled()
             expect(browser.tabs.update).toHaveBeenCalledWith(8, {active: true, highlighted: true})
             expect(browser.tabs.remove).toHaveBeenCalledWith([navEvent.tabId])    
+            expect(browser.windows.update).toHaveBeenCalledTimes(0)
         })
     })
 
     _.each(unopenedFileUrls, (urlData) => {
         test(`Does not close a ${urlData.app} tab that is not already open`, () => {
-            let navEvent = {tabId: 999}
+            let lastTab = _.last(testTabs)
+            let navEvent = {tabId: lastTab.id + 10000, windowId: lastTab.windowId}
             let newFileUrl = new URL(urlData.url)
             let newFileData = background.getGdriveFileId(newFileUrl)
             expect.assertions(2)
@@ -94,6 +103,20 @@ describe('handleDriveFileOpen', () => {
             })
         })
     })
-})
 
-console.log(browser.windows)
+    test("Window switching", () => {
+        let lastTab = _.last(testTabs)
+        let navEvent = {tabId: lastTab.id + 10000, windowId: lastTab.windowId + 1}
+        let newFileUrl = new URL(lastTab.url)
+        let newFileData = background.getGdriveFileId(newFileUrl)
+    
+        expect.assertions(4)
+        return background.handleDriveFileOpen(navEvent, newFileData).then(data => {
+            expect(browser.tabs.query).toHaveBeenCalled()
+            expect(browser.tabs.update).toHaveBeenCalledWith(8, {active: true, highlighted: true})
+            expect(browser.tabs.remove).toHaveBeenCalledWith([navEvent.tabId])    
+            expect(browser.windows.update).toBeCalledWith(lastTab.windowId, {focused: true})
+        })
+        
+    })
+})
